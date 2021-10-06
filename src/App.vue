@@ -1,30 +1,111 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
+  <div class="container__loader" v-if="loading"></div>
+  <div class="container" v-else>
+    <form action="" class="container__form">
+      <button class="container__form-btn left-side">connect wallet</button>
+      <div class="container__form-section">
+        <div>
+          <label for="amount">Amount</label>
+          <input type="text" id="amount" v-model="amount">
+        </div>
+        <select name="symbol" id="symbol" v-model="symbol" @change="tokenSelected">
+          <option  v-for="token in tokens" :key="token" :value="token.symbol">{{ token.symbol }}</option>
+        </select>
+      </div>
+
+      <label for="address">Address (recipient)</label>
+      <input type="text" id="address" v-model="addressRecipient">
+      <h4>Your balance: {{ balance }} {{ symbol }}</h4>
+      <h4>Your allowance: {{ allowance }}</h4>
+      <div class="container__form-buttons">
+        <button class="container__form-btn">Get allowance</button>
+        <button class="container__form-btn">Approve</button>
+        <button class="container__form-btn" @click.prevent="transfer">Transfer</button>
+      </div>
+    </form>
   </div>
-  <router-view/>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+<script>
+import { ERC20 } from '../abis'
+import { BigNumber } from 'bignumber.js'
+const Web4 = require('@cryptonteam/web4')
+export default {
+  data () {
+    return {
+      contractAddresses: [
+        '0x4b107a23361770534bd1839171bbf4b0eb56485c',
+        '0xc13da4146d381c7032ca1ed6050024b4e324f4ef',
+        '0x8d0c36c8842d1dc9e49fbd31b81623c1902b7819',
+        '0xa364f66f40b8117bbdb772c13ca6a3d36fe95b13'
+      ],
+      allInstances: {},
+      addressRecipient: null,
+      amount: null,
+      symbol: 'USDT',
+      balance: '100',
+      allowance: '-',
+      tokens: [],
+      loading: true
+    }
+  },
+  async mounted () {
+    await this.initContract()
+  },
+  methods: {
+    async initContract () { // dotenv
+      const web4 = new Web4()
+      web4.setHDWalletProvider(
+        'trophy cluster danger depend royal dry empower front cheap rib vacant outside',
+        'https://rinkeby.infura.io/v3/8ffeb2ff91d54896b65282dc1af35913'
+      )
+      const erc20 = web4.getContractAbstraction(ERC20)
+      let i = 0
+      for (const address of this.contractAddresses) {
+        i += 1
+        const instance = await erc20.getInstance(address)
+        const tmp = await this.getTokenData(instance)
+        this.allInstances[tmp.symbol] = instance
+        this.tokens.push(tmp)
+        console.log(`loaded ${i}/${this.contractAddresses.length}`)
+      }
+      this.loading = false
+    },
+    async getTokenData (instance) {
+      const name = await instance.name()
+      const symbol = await instance.symbol()
+      const decimals = (await instance.decimals()).words[0]
+      const allowance = (await instance.allowance('0x6870C9300b2166ffECce17B0598195dA629733C3', '0x6870C9300b2166ffECce17B0598195dA629733C3')).words[0]
+      let balance = (await instance.balanceOf('0x6870C9300b2166ffECce17B0598195dA629733C3'))
+      balance = new BigNumber(balance).shiftedBy(-decimals).toString()
+      // console.log(await instance.transfer("0x6870C9300b2166ffECce17B0598195dA629733C3", 1500000));
+      // console.log(await instance.approve("0x6870C9300b2166ffECce17B0598195dA629733C3", 500000));
+      return {
+        name,
+        symbol,
+        allowance,
+        balance,
+        decimals
+      }
+    },
+    tokenSelected () {
+      this.balance = (this.tokens.find(x => x.symbol === this.symbol) || {}).balance
+      this.allowance = (this.tokens.find(y => y.symbol === this.symbol) || {}).allowance
+    },
+    async transfer () {
+      this.loading = true
+      // console.log('Address: ', this.addressRecipient)
+      // console.log('Amount: ', this.amount)
+      const decimals = (this.tokens.find(y => y.symbol === this.symbol) || {}).decimals
+      const amount = new BigNumber(this.amount).shiftedBy(+decimals).toString()
+      // console.log('Amount for contract: ', amount)
+      await this.allInstances[this.symbol].transfer(this.addressRecipient, amount)
+      this.amount = null
+      this.addressRecipient = null
+      this.loading = false
     }
   }
 }
-</style>
+</script>
+
+<style lang="scss"></style>
