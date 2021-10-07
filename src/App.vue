@@ -70,7 +70,6 @@ export default {
       const [account] = await ethereum.request({ method: 'eth_requestAccounts' })
       this.userAddress = account
       const provider = new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/8ffeb2ff91d54896b65282dc1af35913')
-      // const web3Wallet = new Web3(provider) // init web3
       const web4 = new Web4()
       await web4.setProvider(provider, this.userAddress)
       const erc20 = web4.getContractAbstraction(ERC20)
@@ -82,22 +81,17 @@ export default {
         this.tokens[address].instance = await erc20.getInstance(address)
         this.tokens[address].data = await this.getTokenData(this.tokens[address].instance)
         isUsdt && (this.tokenAddress = address)
-
         i += 1
         console.log(`loaded ${i}/${tokensArr.length}`)
       }
-      console.log('tokens', this.tokens)
       this.loading = false
     },
     async getTokenData (instance) {
       const name = await instance.name()
-      console.log('name: ', name)
       const symbol = await instance.symbol()
       const decimals = (await instance.decimals())
       let balance = (await instance.balanceOf(this.userAddress))
       balance = new BigNumber(balance).shiftedBy(-decimals).toString()
-      // console.log(await instance.transfer("0x6870C9300b2166ffECce17B0598195dA629733C3", 1500000));
-      // console.log(await instance.approve("0x6870C9300b2166ffECce17B0598195dA629733C3", 500000));
       return {
         name,
         symbol,
@@ -127,8 +121,8 @@ export default {
         const total = new BigNumber(this.amount).shiftedBy(+6).toString()
         await inst.approve(this.recipientAddress, total)
         isDone = true
-      } catch (err) {
-        console.log('Error in approve', err)
+      } catch (error) {
+        console.log('Error: ', error)
       }
       console.log('result isDone:', isDone)
     },
@@ -144,11 +138,11 @@ export default {
 
         const absErc20 = web4.getContractAbstraction(ERC20)
         const inst = await absErc20.getInstance(this.tokenAddress)
-        const total = new BigNumber(this.amount).shiftedBy(+6).toString()
-        await inst.transfer(this.recipientAddress, total)
+        const amount = new BigNumber(this.amount).shiftedBy(+6).toString()
+        await inst.transfer(this.recipientAddress, amount)
         isDone = true
-      } catch (err) {
-        console.log('Error in approve', err)
+      } catch (error) {
+        console.error('Error: ', error)
       }
 
       console.log('result transfer:', isDone)
