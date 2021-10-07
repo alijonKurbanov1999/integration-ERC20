@@ -1,25 +1,28 @@
 <template>
   <div class="container__loader" v-if="loading"></div>
   <div class="container" v-else>
-    <form action="" class="container__form">
+    <form class="container__form">
       <button class="container__form-btn left-side">connect wallet</button>
       <div class="container__form-section">
         <div>
           <label for="amount">Amount</label>
-          <input type="text" id="amount" v-model="amount">
+          <input type="text" id="amount" class="input" v-model.trim="amount"/>
         </div>
+
         <select name="symbol" id="symbol" v-model="symbol" @change="tokenSelected">
           <option  v-for="token in tokens" :key="token" :value="token.symbol">{{ token.symbol }}</option>
         </select>
       </div>
 
       <label for="address">Address (recipient)</label>
-      <input type="text" id="address" v-model="addressRecipient">
+      <input type="text" id="address" class="input" v-model.trim="addressRecipient"/>
+
       <h4>Your balance: {{ balance }} {{ symbol }}</h4>
       <h4>Your allowance: {{ allowance }}</h4>
+      <hr/>
       <div class="container__form-buttons">
-        <button class="container__form-btn">Get allowance</button>
-        <button class="container__form-btn">Approve</button>
+        <button class="container__form-btn" @click.prevent="getAllowanse">Get allowance</button>
+        <button class="container__form-btn" @click.prevent="toAppr">Approve</button>
         <button class="container__form-btn" @click.prevent="transfer">Transfer</button>
       </div>
     </form>
@@ -29,6 +32,8 @@
 <script>
 import { ERC20 } from '../abis'
 import { BigNumber } from 'bignumber.js'
+// import { Form, Field, ErrorMessage } from 'vee-validate'
+// // import * as yup from 'yup'
 const Web4 = require('@cryptonteam/web4')
 export default {
   data () {
@@ -88,9 +93,25 @@ export default {
         decimals
       }
     },
+    // ErrorTest () {
+    //   console.log('Error amount: ', this.errorAmount = yup.number().required('Amount of tokens required!').min(6, 'Password cannot be less than 6'))
+    //   console.log('Error address: ', this.errorAddress = yup.string().required('Address is required'))
+    // },
     tokenSelected () {
       this.balance = (this.tokens.find(x => x.symbol === this.symbol) || {}).balance
+    },
+    getAllowanse () {
       this.allowance = (this.tokens.find(y => y.symbol === this.symbol) || {}).allowance
+    },
+    async toAppr () {
+      try {
+        const decimals = (this.tokens.find(y => y.symbol === this.symbol) || {}).decimals
+        const amount = new BigNumber(this.amount).shiftedBy(+decimals).toString()
+        await this.allInstances[this.symbol].approve(this.addressRecipient, amount)
+        console.log('result')
+      } catch (e) {
+        console.log('approve error: ', e)
+      }
     },
     async transfer () {
       this.loading = true
@@ -100,11 +121,12 @@ export default {
       const amount = new BigNumber(this.amount).shiftedBy(+decimals).toString()
       // console.log('Amount for contract: ', amount)
       await this.allInstances[this.symbol].transfer(this.addressRecipient, amount)
-      this.amount = null
-      this.addressRecipient = null
+      // this.amount = null
+      // this.addressRecipient = null
       this.loading = false
     }
   }
+  // components: { Field, Form, ErrorMessage }
 }
 </script>
 

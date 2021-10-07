@@ -3,7 +3,9 @@
 * {
     box-sizing: border-box;
 }
-
+h4 {
+    margin: 10px auto 10px 0px;
+}
 body {
     font-family: Inter, Roboto, Oxygen, Fira Sans, Helvetica Neue, sans-serif;
     font-size: 16px;
@@ -21,19 +23,27 @@ strong,
     border-radius: 10px;
     background: #ffffff;
 }
+.container__form {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(1fr, 1fr));
+}
 .left-side {
-     right: -81.4%;
- }
+    justify-self: end;
+}
+.container__form-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
 .container__form-btn {
     color: #ffffff;
     position: relative;
     place-content: center;
     place-items: center;
-    width: fit-content;
+    width: 165px;
     letter-spacing: 0.10em;
     border: 1px solid #63BCD8;
     text-decoration: none;
-    margin-right: 10px;
+    margin-bottom: 10px;
     padding: 0.5rem 1.5rem;
     font-weight: 700;
     outline: none;
@@ -54,12 +64,12 @@ strong,
 }
 .container__form-section {
     display: grid;
-    grid-template-columns: 89% 10%;
+    grid-template-columns: 7fr 1fr;
     justify-content: space-between;
     align-items: flex-end;
 }
 
-.container__form input {
+.container__form .input {
     font-family: Inter, Roboto, Oxygen, Fira Sans, Helvetica Neue, sans-serif;
     margin: 0;
     outline: none;
