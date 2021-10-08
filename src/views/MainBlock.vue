@@ -54,11 +54,11 @@ export default {
   computed: {
     balance () {
       const token = this.tokens[this.tokenAddress]
-      return token ? token.data.balance : 100
+      return token ? token.data.balance : null
     },
     symbol () {
       const token = this.tokens[this.tokenAddress]
-      return token ? token.data.symbol : 'USDT'
+      return token ? token.data.symbol : '-'
     },
     invalid () {
       return this.amount === null && this.recipientAddress === null
