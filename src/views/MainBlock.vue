@@ -8,15 +8,12 @@
           <label for="amount">Amount</label>
           <input type="text" id="amount" v-model.trim="amount"/>
         </div>
-
         <select v-if="userAddress" name="symbol" id="symbol" v-model="tokenAddress">
           <option  v-for="[address, token] in Object.entries(tokens)" :key="address" :value="address">{{ token.data.symbol }}</option>
         </select>
       </div>
-
       <label for="address">Address (recipient)</label>
       <input type="text" id="address" v-model.trim="recipientAddress"/>
-
       <h4>Your balance: {{ balance }} {{ symbol }}</h4>
       <h4>Your allowance: {{ allowance }}</h4>
       <hr/>
@@ -66,18 +63,12 @@ export default {
     }
   },
   methods: {
-    async initContract () { // dotenv
+    async initContract () {
       this.loading = true
-      // const { ethereum } = window // ethereum - metamask
-      // const [account] = await ethereum.request({ method: 'eth_requestAccounts' })
-      // this.userAddress = account
-      // const provider = new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/8ffeb2ff91d54896b65282dc1af35913')
-      // const web4 = new Web4()
-      // await web4.setProvider(provider, this.userAddress)
-      const { ethereum } = window // ethereum - metamask
-      const web3Wallet = new Web3(ethereum) // init web3
+      const { ethereum } = window
+      const web3Wallet = new Web3(ethereum)
       await ethereum.enable()
-      this.userAddress = await web3Wallet.eth.getCoinbase() // получить адрес пользователя
+      this.userAddress = await web3Wallet.eth.getCoinbase()
       const web4 = new Web4()
       await web4.setProvider(ethereum, this.userAddress)
       const erc20 = web4.getContractAbstraction(ERC20)
@@ -125,12 +116,6 @@ export default {
     },
     async transfer () {
       try {
-        // const { ethereum } = window
-        // await ethereum.enable()
-        // const web4 = new Web4()
-        // await web4.setProvider(ethereum, this.userAddress)
-        // const absErc20 = web4.getContractAbstraction(ERC20)
-        // const inst = await absErc20.getInstance(this.tokenAddress)
         const inst = this.tokens[this.tokenAddress].instance
         const decimals = this.tokens[this.tokenAddress].data.decimals
         const amount = new BigNumber(this.amount).shiftedBy(+decimals).toString()
