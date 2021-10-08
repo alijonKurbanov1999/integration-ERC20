@@ -50,7 +50,6 @@ strong,
     background: #63BCD8;
     transition: all 0.22s;
 }
-
 .container__form-btn:hover {
     cursor: pointer;
     opacity: 0.8;
@@ -68,8 +67,7 @@ strong,
     justify-content: space-between;
     align-items: flex-end;
 }
-
-.container__form .input {
+.container__form input {
     font-family: Inter, Roboto, Oxygen, Fira Sans, Helvetica Neue, sans-serif;
     margin: 0;
     outline: none;

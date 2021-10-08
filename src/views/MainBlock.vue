@@ -6,7 +6,7 @@
       <div class="container__form-section">
         <div>
           <label for="amount">Amount</label>
-          <input type="text" id="amount" class="input" v-model.trim="amount"/>
+          <input type="text" id="amount" v-model.trim="amount"/>
         </div>
 
         <select v-if="userAddress" name="symbol" id="symbol" v-model="tokenAddress">
@@ -15,7 +15,7 @@
       </div>
 
       <label for="address">Address (recipient)</label>
-      <input type="text" id="address" class="input" v-model.trim="recipientAddress"/>
+      <input type="text" id="address" v-model.trim="recipientAddress"/>
 
       <h4>Your balance: {{ balance }} {{ symbol }}</h4>
       <h4>Your allowance: {{ allowance }}</h4>
@@ -37,6 +37,7 @@ const Web4 = require('@cryptonteam/web4')
 export default {
   data () {
     return {
+      decimals: '',
       tokens: {
         '0x4b107a23361770534bd1839171bbf4b0eb56485c': {},
         '0xc13da4146d381c7032ca1ed6050024b4e324f4ef': {},
@@ -67,14 +68,19 @@ export default {
   methods: {
     async initContract () { // dotenv
       this.loading = true
+      // const { ethereum } = window // ethereum - metamask
+      // const [account] = await ethereum.request({ method: 'eth_requestAccounts' })
+      // this.userAddress = account
+      // const provider = new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/8ffeb2ff91d54896b65282dc1af35913')
+      // const web4 = new Web4()
+      // await web4.setProvider(provider, this.userAddress)
       const { ethereum } = window // ethereum - metamask
-      const [account] = await ethereum.request({ method: 'eth_requestAccounts' })
-      this.userAddress = account
-      const provider = new Web3.providers.HttpProvider('https://rinkeby.infura.io/v3/8ffeb2ff91d54896b65282dc1af35913')
+      const web3Wallet = new Web3(ethereum) // init web3
+      await ethereum.enable()
+      this.userAddress = await web3Wallet.eth.getCoinbase() // получить адрес пользователя
       const web4 = new Web4()
-      await web4.setProvider(provider, this.userAddress)
+      await web4.setProvider(ethereum, this.userAddress)
       const erc20 = web4.getContractAbstraction(ERC20)
-
       const tokensArr = Object.keys(this.tokens)
       let i = 0
       for (const address of tokensArr) {
@@ -90,7 +96,7 @@ export default {
     async getTokenData (instance) {
       const name = await instance.name()
       const symbol = await instance.symbol()
-      const decimals = (await instance.decimals())
+      const decimals = (await instance.decimals()).toString()
       let balance = (await instance.balanceOf(this.userAddress))
       balance = new BigNumber(balance).shiftedBy(-decimals).toString()
       return {
@@ -119,13 +125,15 @@ export default {
     },
     async transfer () {
       try {
-        const { ethereum } = window
-        await ethereum.enable()
-        const web4 = new Web4()
-        await web4.setProvider(ethereum, this.userAddress)
-        const absErc20 = web4.getContractAbstraction(ERC20)
-        const inst = await absErc20.getInstance(this.tokenAddress)
-        const amount = new BigNumber(this.amount).shiftedBy(+8).toString()
+        // const { ethereum } = window
+        // await ethereum.enable()
+        // const web4 = new Web4()
+        // await web4.setProvider(ethereum, this.userAddress)
+        // const absErc20 = web4.getContractAbstraction(ERC20)
+        // const inst = await absErc20.getInstance(this.tokenAddress)
+        const inst = this.tokens[this.tokenAddress].instance
+        const decimals = this.tokens[this.tokenAddress].data.decimals
+        const amount = new BigNumber(this.amount).shiftedBy(+decimals).toString()
         await inst.transfer(this.recipientAddress, amount)
       } catch (error) {
         console.error('Error: ', error)
