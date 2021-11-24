@@ -32,7 +32,8 @@ strong,
 .container__form-buttons {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    grid-row-gap: 5px;
+    grid-row-gap: 10px;
+    grid-column-gap: 20px;
 }
 .container__form-btn {
     color: #ffffff;
@@ -43,7 +44,6 @@ strong,
     letter-spacing: 0.10em;
     border: 1px solid #63BCD8;
     text-decoration: none;
-    margin-bottom: 10px;
     padding: 0.5rem 1.5rem;
     font-weight: 700;
     outline: none;

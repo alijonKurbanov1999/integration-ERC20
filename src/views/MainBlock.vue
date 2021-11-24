@@ -31,6 +31,7 @@ import Web3 from 'web3'
 import { ERC20 } from '../../abis'
 import { BigNumber } from 'bignumber.js'
 const Web4 = require('@cryptonteam/web4')
+
 export default {
   data () {
     return {
